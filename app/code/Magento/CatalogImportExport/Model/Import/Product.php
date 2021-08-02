@@ -1807,7 +1807,7 @@ class Product extends AbstractEntity
                             if ($column === self::COL_MEDIA_IMAGE) {
                                 $rowData[$column][] = $uploadedFile;
                             }
-                            $mediaGallery[$storeId][$rowSku][$uploadedFile] = [
+                            $mediaGalleryStoreData = [
                                 'attribute_id' => $this->getMediaGalleryAttributeId(),
                                 'label' => isset($rowLabels[$column][$columnImageKey])
                                     ? $rowLabels[$column][$columnImageKey]
@@ -1817,6 +1817,15 @@ class Product extends AbstractEntity
                                     ? $imageHiddenStates[$columnImage] : '0',
                                 'value' => $uploadedFile,
                             ];
+                            $mediaGallery[$storeId][$rowSku][$uploadedFile] = $mediaGalleryStoreData;
+                            // Add record for default scope if it does not exist
+                            if (!($mediaGallery[Store::DEFAULT_STORE_ID][$rowSku][$uploadedFile] ?? [])) {
+                                //Set label and disabled values to their default values
+                                $mediaGalleryStoreData['label'] = null;
+                                $mediaGalleryStoreData['disabled'] = 0;
+                                $mediaGallery[Store::DEFAULT_STORE_ID][$rowSku][$uploadedFile] = $mediaGalleryStoreData;
+                            }
+
                         }
                     }
                 }
@@ -1846,7 +1855,7 @@ class Product extends AbstractEntity
                 }
 
                 $productTypeModel = $this->_productTypeModels[$productType];
-                if (!empty($rowData['tax_class_name'])) {
+                if (isset($rowData['tax_class_name']) && strlen($rowData['tax_class_name'])) {
                     $rowData['tax_class_id'] =
                         $this->taxClassProcessor->upsertTaxClass($rowData['tax_class_name'], $productTypeModel);
                 }
@@ -3010,7 +3019,7 @@ class Product extends AbstractEntity
     {
         if (!empty($rowData[self::URL_KEY])) {
             $urlKey = (string) $rowData[self::URL_KEY];
-            return trim(strtolower($urlKey));
+            return $this->productUrl->formatUrlKey($urlKey);
         }
 
         if (!empty($rowData[self::COL_NAME])
