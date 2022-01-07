@@ -80,8 +80,9 @@ class JsFooterPlugin
             $scriptClosePos = strpos($content, $scriptClose, $scriptOpenPos);
             $script = substr($content, $scriptOpenPos, $scriptClosePos - $scriptOpenPos + strlen($scriptClose));
             $isXMagentoTemplate = strpos($script, 'text/x-magento-template') !== false;
+            $execludedMoveJs = strpos($script, 'data-move="false"') !== false;
 
-            if ($isXMagentoTemplate) {
+            if ($isXMagentoTemplate || $execludedMoveJs) {
                 $scriptOpenPos = strpos($content, $scriptOpen, $scriptClosePos);
                 continue;
             }
