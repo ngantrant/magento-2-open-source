@@ -6,6 +6,7 @@
 namespace Magento\SalesRule\Controller\Adminhtml\Promo\Quote;
 
 use Magento\Framework\App\Action\HttpPostActionInterface;
+use Magento\Framework\Filter\FilterInput;
 use Magento\SalesRule\Model\CouponGenerator;
 use Magento\Framework\MessageQueue\PublisherInterface;
 use Magento\SalesRule\Api\Data\CouponGenerationSpecInterfaceFactory;
@@ -66,6 +67,7 @@ class Generate extends \Magento\SalesRule\Controller\Adminhtml\Promo\Quote imple
      * Generate Coupons action
      *
      * @return void
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
     public function execute()
     {
@@ -80,11 +82,15 @@ class Generate extends \Magento\SalesRule\Controller\Adminhtml\Promo\Quote imple
 
         if (!$rule->getId()) {
             $result['error'] = __('Rule is not defined');
+        } elseif ((int) $rule->getCouponType() !== \Magento\SalesRule\Model\Rule::COUPON_TYPE_AUTO
+            && !$rule->getUseAutoGeneration()) {
+            $result['error'] =
+                __('The rule coupon settings changed. Please save the rule before using auto-generation.');
         } else {
             try {
                 $data = $this->getRequest()->getParams();
                 if (!empty($data['to_date'])) {
-                    $inputFilter = new \Zend_Filter_Input(['to_date' => $this->_dateFilter], [], $data);
+                    $inputFilter = new FilterInput(['to_date' => $this->_dateFilter], [], $data);
                     $data = $inputFilter->getUnescaped();
                 }
 
