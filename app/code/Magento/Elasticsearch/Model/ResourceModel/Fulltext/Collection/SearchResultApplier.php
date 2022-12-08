@@ -64,23 +64,23 @@ class SearchResultApplier implements SearchResultApplierInterface
     private $stockStatusApplier;
 
     /**
-     * @param Collection $collection
-     * @param SearchResultInterface $searchResult
-     * @param int $size
-     * @param int $currentPage
-     * @param ScopeConfigInterface|null $scopeConfig
-     * @param MetadataPool|null $metadataPool
-     * @param StockStatusFilterInterface|null $stockStatusFilter
+     * @param Collection                       $collection
+     * @param SearchResultInterface            $searchResult
+     * @param int                              $size
+     * @param int                              $currentPage
+     * @param ScopeConfigInterface|null        $scopeConfig
+     * @param MetadataPool|null                $metadataPool
+     * @param StockStatusFilterInterface|null  $stockStatusFilter
      * @param StockStatusApplierInterface|null $stockStatusApplier
      */
     public function __construct(
-        Collection $collection,
-        SearchResultInterface $searchResult,
-        int $size,
-        int $currentPage,
-        ?ScopeConfigInterface $scopeConfig = null,
-        ?MetadataPool $metadataPool = null,
-        ?StockStatusFilterInterface $stockStatusFilter = null,
+        Collection                   $collection,
+        SearchResultInterface        $searchResult,
+        int                          $size,
+        int                          $currentPage,
+        ?ScopeConfigInterface        $scopeConfig = null,
+        ?MetadataPool                $metadataPool = null,
+        ?StockStatusFilterInterface  $stockStatusFilter = null,
         ?StockStatusApplierInterface $stockStatusApplier = null
     ) {
         $this->collection = $collection;
@@ -123,9 +123,9 @@ class SearchResultApplier implements SearchResultApplierInterface
     /**
      * Slice current items
      *
-     * @param array $items
-     * @param int $size
-     * @param int $currentPage
+     * @param  array $items
+     * @param  int   $size
+     * @param  int   $currentPage
      * @return array
      */
     private function sliceItems(array $items, int $size, int $currentPage): array
@@ -134,7 +134,7 @@ class SearchResultApplier implements SearchResultApplierInterface
             // Check that current page is in a range of allowed page numbers, based on items count and items per page,
             // than calculate offset for slicing items array.
             $itemsCount = count($items);
-            $maxAllowedPageNumber = ceil($itemsCount/$size);
+            $maxAllowedPageNumber = ceil($itemsCount / $size);
             if ($currentPage < 1) {
                 $currentPage = 1;
             }
@@ -152,14 +152,15 @@ class SearchResultApplier implements SearchResultApplierInterface
     /**
      * Get offset for given page.
      *
-     * @param int $pageNumber
-     * @param int $pageSize
+     * @param  int $pageNumber
+     * @param  int $pageSize
      * @return int
      */
     private function getOffset(int $pageNumber, int $pageSize): int
     {
         return ($pageNumber - 1) * $pageSize;
     }
+
     /**
      * Fetch filtered product ids sorted by the saleability and other applied sort orders
      *
@@ -174,7 +175,8 @@ class SearchResultApplier implements SearchResultApplierInterface
         }
 
         if ($this->collection->getFlag('has_stock_status_filter')
-            || $this->collection->getFlag('has_category_filter')) {
+            || $this->collection->getFlag('has_category_filter')
+        ) {
             $categoryId = null;
             $searchCriteria = $this->searchResult->getSearchCriteria();
             foreach ($searchCriteria->getFilterGroups() as $filterGroup) {
@@ -200,7 +202,7 @@ class SearchResultApplier implements SearchResultApplierInterface
     /**
      * Fetch product resultset by custom sort orders
      *
-     * @param int $categoryId
+     * @param  int $categoryId
      * @return array
      * @throws \Magento\Framework\Exception\LocalizedException
      * @throws \Exception
@@ -246,7 +248,9 @@ class SearchResultApplier implements SearchResultApplierInterface
                 $query->joinLeft(
                     ['product_var' => $this->collection->getTable('catalog_product_entity_varchar')],
                     "product_var.{$linkField} = e.{$linkField} AND product_var.attribute_id =
-                    (SELECT attribute_id FROM eav_attribute WHERE entity_type_id={$entityTypeId}
+		            (SELECT attribute_id FROM
+	                {$this->collection->getTable('eav_attribute')}
+		            WHERE entity_type_id={$entityTypeId}
                     AND attribute_code='name')",
                     ['product_var.value AS name']
                 );
@@ -255,7 +259,9 @@ class SearchResultApplier implements SearchResultApplierInterface
                     ['price_index' => $this->collection->getTable('catalog_product_index_price')],
                     'price_index.entity_id = e.entity_id'
                     . ' AND price_index.customer_group_id = 0'
-                    . ' AND price_index.website_id = (Select website_id FROM store WHERE store_id = '
+                    . " AND price_index.website_id = (Select website_id FROM
+	                {$this->collection->getTable('store')}
+		            WHERE store_id = "
                     . $storeId . ')',
                     ['price_index.max_price AS price']
                 );
@@ -285,7 +291,7 @@ class SearchResultApplier implements SearchResultApplierInterface
      */
     private function hasShowOutOfStockStatus(): bool
     {
-        return (bool) $this->scopeConfig->getValue(
+        return (bool)$this->scopeConfig->getValue(
             \Magento\CatalogInventory\Model\Configuration::XML_PATH_SHOW_OUT_OF_STOCK,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE
         );
