@@ -51,6 +51,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
     /**
      * @var \Magento\Framework\Session\SidResolverInterface
      * @deprecated 102.0.5 Not used anymore.
+     * @see MC-29565
      */
     protected $_sidResolver;
 
@@ -170,6 +171,12 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
      * @var LockGuardedCacheLoader
      */
     private $lockQuery;
+
+    /**
+     * Store the disabled modules to avoid retrieving it multiple times.
+     * @var array|bool|null
+     */
+    private static $disabledModules = null;
 
     /**
      * Constructor
@@ -650,10 +657,17 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
     public function toHtml()
     {
         $this->_eventManager->dispatch('view_block_abstract_to_html_before', ['block' => $this]);
-        if ($this->_scopeConfig->getValue(
-            'advanced/modules_disable_output/' . $this->getModuleName(),
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
-        )) {
+
+        if (static::$disabledModules === null || !isset(static::$disabledModules[$this->getModuleName()])) {
+            static::$disabledModules[$this->getModuleName()] = $this->_scopeConfig->getValue(
+                'advanced/modules_disable_output/' . $this->getModuleName(),
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ) ?? [];
+        }
+
+        if (isset(static::$disabledModules[$this->getModuleName()])
+                && static::$disabledModules[$this->getModuleName()]
+        ) {
             return '';
         }
 
@@ -673,7 +687,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
                 'transport' => $transportObject
             ]
         );
-        $html = $transportObject->getHtml();
+        $html = $transportObject->getData('html');
 
         return $html;
     }
@@ -880,6 +894,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
      * @param array|null $allowedTags
      * @return string
      * @deprecated 103.0.0 Use $escaper directly in templates and in blocks.
+     * @see MAGETWO-55858
      */
     public function escapeHtml($data, $allowedTags = null)
     {
@@ -893,6 +908,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
      * @return string
      * @since 101.0.0
      * @deprecated 103.0.0 Use $escaper directly in templates and in blocks.
+     * @see MAGETWO-55858
      */
     public function escapeJs($string)
     {
@@ -907,6 +923,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
      * @return string
      * @since 101.0.0
      * @deprecated 103.0.0 Use $escaper directly in templates and in blocks.
+     * @see MAGETWO-55858
      */
     public function escapeHtmlAttr($string, $escapeSingleQuote = true)
     {
@@ -920,6 +937,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
      * @return string
      * @since 101.0.0
      * @deprecated 103.0.0 Use $escaper directly in templates and in blocks.
+     * @see MAGETWO-55858
      */
     public function escapeCss($string)
     {
@@ -947,6 +965,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
      * @param string $string
      * @return string
      * @deprecated 103.0.0 Use $escaper directly in templates and in blocks.
+     * @see MAGETWO-55858
      */
     public function escapeUrl($string)
     {
@@ -959,6 +978,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
      * @param string $data
      * @return string
      * @deprecated 101.0.0
+     * @see MAGETWO-71174
      */
     public function escapeXssInUrl($data)
     {
@@ -974,6 +994,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
      * @param bool $addSlashes
      * @return string
      * @deprecated 101.0.0
+     * @see MAGETWO-71174
      */
     public function escapeQuote($data, $addSlashes = false)
     {
@@ -988,6 +1009,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
      *
      * @return string|array
      * @deprecated 101.0.0
+     * @see MAGETWO-71174
      */
     public function escapeJsQuote($data, $quote = '\'')
     {
@@ -1175,6 +1197,7 @@ abstract class AbstractBlock extends \Magento\Framework\DataObject implements Bl
      *
      * @return bool
      * @deprecated
+     * @see https://github.com/magento/magento2/pull/31754
      * @since 103.0.1
      */
     public function isScopePrivate()

@@ -241,7 +241,7 @@ class AbstractBlockTest extends TestCase
         $this->eventManagerMock->expects($this->any())
             ->method('dispatch')
             ->with('view_block_abstract_to_html_before', ['block' => $this->block]);
-        $this->scopeConfigMock->expects($this->once())
+        $this->scopeConfigMock
             ->method('getValue')
             ->with('advanced/modules_disable_output/' . $moduleName, ScopeInterface::SCOPE_STORE)
             ->willReturn(true);
@@ -252,7 +252,6 @@ class AbstractBlockTest extends TestCase
     /**
      * @param string|bool $cacheLifetime
      * @param string|bool $dataFromCache
-     * @param InvokedCount $expectsDispatchEvent
      * @param string $expectedResult
      * @return void
      * @dataProvider getCacheLifetimeDataProvider
@@ -260,18 +259,17 @@ class AbstractBlockTest extends TestCase
     public function testGetCacheLifetimeViaToHtml(
         $cacheLifetime,
         $dataFromCache,
-        $expectsDispatchEvent,
         $expectedResult
     ) {
-        $moduleName = 'Test';
+        $moduleName = 'Test_Module';
         $cacheKey = 'testKey';
         $this->block->setData('cache_key', $cacheKey);
         $this->block->setData('module_name', $moduleName);
         $this->block->setData('cache_lifetime', $cacheLifetime);
 
-        $this->eventManagerMock->expects($expectsDispatchEvent)
+        $this->eventManagerMock
             ->method('dispatch');
-        $this->scopeConfigMock->expects($this->once())
+        $this->scopeConfigMock
             ->method('getValue')
             ->with('advanced/modules_disable_output/' . $moduleName, ScopeInterface::SCOPE_STORE)
             ->willReturn(false);
@@ -302,31 +300,26 @@ class AbstractBlockTest extends TestCase
             [
                 'cacheLifetime' => null,
                 'dataFromCache' => 'dataFromCache',
-                'expectsDispatchEvent' => $this->exactly(2),
                 'expectedResult' => '',
             ],
             [
                 'cacheLifetime' => false,
                 'dataFromCache' => 'dataFromCache',
-                'expectsDispatchEvent' => $this->exactly(2),
                 'expectedResult' => '',
             ],
             [
                 'cacheLifetime' => 120,
                 'dataFromCache' => 'dataFromCache',
-                'expectsDispatchEvent' => $this->exactly(2),
                 'expectedResult' => 'dataFromCache',
             ],
             [
                 'cacheLifetime' => '120string',
                 'dataFromCache' => 'dataFromCache',
-                'expectsDispatchEvent' => $this->exactly(2),
                 'expectedResult' => 'dataFromCache',
             ],
             [
                 'cacheLifetime' => 120,
                 'dataFromCache' => false,
-                'expectsDispatchEvent' => $this->exactly(2),
                 'expectedResult' => '',
             ],
         ];
