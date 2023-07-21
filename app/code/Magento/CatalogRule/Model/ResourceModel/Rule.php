@@ -123,6 +123,7 @@ class Rule extends \Magento\Rule\Model\ResourceModel\AbstractResource
             // @phpstan-ignore-next-line - this is a virtual type defined in di.xml
             ->get(\Magento\CatalogRule\Model\ResourceModel\Rule\AssociatedEntityMap::class)
             ->getData();
+
         parent::__construct($context, $connectionName);
     }
 
@@ -207,12 +208,8 @@ class Rule extends \Magento\Rule\Model\ResourceModel\AbstractResource
     }
 
     /**
-     * Load an object
+     * @inheritDoc
      *
-     * @param \Magento\Framework\Model\AbstractModel $object
-     * @param mixed $value
-     * @param string $field
-     * @return $this
      * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function load(\Magento\Framework\Model\AbstractModel $object, $value, $field = null)
