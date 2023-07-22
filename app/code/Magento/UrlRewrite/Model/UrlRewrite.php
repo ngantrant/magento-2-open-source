@@ -44,31 +44,6 @@ use Magento\UrlRewrite\Service\V1\Data\UrlRewrite as UrlRewriteService;
 class UrlRewrite extends AbstractModel implements ResetAfterRequestInterface
 {
     /**
-     * @var Json
-     */
-    private $serializer;
-
-    /**
-     * @var CacheContext|mixed|null
-     */
-    private $cacheContext;
-
-    /**
-     * @var EventManager|mixed|null
-     */
-    private $eventManager;
-
-    /**
-     * @var array
-     */
-    private $entityToCacheTagMap;
-
-    /**
-     * @var UrlFinderInterface
-     */
-    private $urlFinder;
-
-    /**
      * UrlRewrite constructor.
      *
      * @param Context $context
@@ -88,17 +63,16 @@ class UrlRewrite extends AbstractModel implements ResetAfterRequestInterface
         AbstractResource $resource = null,
         AbstractDb $resourceCollection = null,
         array $data = [],
-        Json $serializer = null,
-        CacheContext $cacheContext = null,
-        EventManager $eventManager = null,
-        UrlFinderInterface $urlFinder = null,
-        array $entityToCacheTagMap = []
+        private ?Json $serializer = null,
+        private ?CacheContext $cacheContext = null,
+        private ?EventManager $eventManager = null,
+        private ?UrlFinderInterface $urlFinder = null,
+        private readonly array $entityToCacheTagMap = []
     ) {
         $this->serializer = $serializer ?: ObjectManager::getInstance()->get(Json::class);
         $this->cacheContext = $cacheContext ?: ObjectManager::getInstance()->get(CacheContext::class);
         $this->eventManager = $eventManager ?: ObjectManager::getInstance()->get(EventManager::class);
         $this->urlFinder = $urlFinder ?: ObjectManager::getInstance()->get(UrlFinderInterface::class);
-        $this->entityToCacheTagMap = $entityToCacheTagMap;
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
     }
 
@@ -120,7 +94,7 @@ class UrlRewrite extends AbstractModel implements ResetAfterRequestInterface
      */
     public function getMetadata()
     {
-        $metadata = $this->getData(\Magento\UrlRewrite\Service\V1\Data\UrlRewrite::METADATA);
+        $metadata = $this->getData(UrlRewriteService::METADATA);
         return !empty($metadata) ? $this->serializer->unserialize($metadata) : [];
     }
 
@@ -135,7 +109,7 @@ class UrlRewrite extends AbstractModel implements ResetAfterRequestInterface
         if (is_array($metadata)) {
             $metadata = $this->serializer->serialize($metadata);
         }
-        return $this->setData(\Magento\UrlRewrite\Service\V1\Data\UrlRewrite::METADATA, $metadata);
+        return $this->setData(UrlRewriteService::METADATA, $metadata);
     }
 
     /**
