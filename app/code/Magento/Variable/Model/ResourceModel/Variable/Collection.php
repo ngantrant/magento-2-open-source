@@ -5,16 +5,18 @@
  */
 namespace Magento\Variable\Model\ResourceModel\Variable;
 
+use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
+use Magento\Variable\Model\ResourceModel\Variable as ResourceVariable;
+use Magento\Variable\Model\Variable as ModelVariable;
+
 /**
  * Custom variable collection
  *
  * @author      Magento Core Team <core@magentocommerce.com>
  */
-class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection
+class Collection extends AbstractCollection
 {
     /**
-     * Store Id
-     *
      * @var int
      */
     protected $_storeId = 0;
@@ -27,7 +29,7 @@ class Collection extends \Magento\Framework\Model\ResourceModel\Db\Collection\Ab
     protected function _construct()
     {
         parent::_construct();
-        $this->_init(\Magento\Variable\Model\Variable::class, \Magento\Variable\Model\ResourceModel\Variable::class);
+        $this->_init(ModelVariable::class, ResourceVariable::class);
     }
 
     /**
