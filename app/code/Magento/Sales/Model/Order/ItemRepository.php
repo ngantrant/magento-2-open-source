@@ -142,7 +142,7 @@ class ItemRepository implements OrderItemRepositoryInterface
     public function delete(OrderItemInterface $entity)
     {
         $this->metadata->getMapper()->delete($entity);
-        unset($this->registry[$entity->getEntityId()]);
+        unset($this->registry[$entity->getItemId()]);
         return true;
     }
 
@@ -171,8 +171,8 @@ class ItemRepository implements OrderItemRepositoryInterface
         }
 
         $this->metadata->getMapper()->save($entity);
-        $this->registry[$entity->getEntityId()] = $entity;
-        return $this->registry[$entity->getEntityId()];
+        $this->registry[$entity->getItemId()] = $entity;
+        return $this->registry[$entity->getItemId()];
     }
 
     /**
