@@ -3,12 +3,15 @@
  * Copyright © Magento, Inc. All rights reserved.
  * See COPYING.txt for license details.
  */
+
+/** @var \Magento\Backend\Block\Template $block */
 ?>
 <div class="page-actions">
     <div class="page-actions-inner">
         <div class="page-actions-buttons">
             <?= $block->getChildHtml() ?>
 
+            <?php if ($block->getAuthorization()->isAllowed('Magento_Reports::statistics')): ?>
             <form class="action-element"
                   action="<?= $block->escapeUrl($block->getUrl('*/*/refreshStatistics')) ?>"
                   method="post">
@@ -23,6 +26,7 @@
                     <?= $block->escapeHtml(__('Reload Data')) ?>
                 </button>
             </form>
+            <?php endif; ?>
         </div>
     </div>
 </div>
